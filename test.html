@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+<head>
+<title>Scrolling Test</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=300" />
+<style type="text/css">
+body {
+	background-color: #ffffff;
+	width: 450px;
+}
+
+div#wrapper {
+	overflow: hidden;
+	border: 2px solid red;
+	padding: 5px 0;
+	width: 400px;
+}
+
+div#containerElement {
+	height: 110px;
+	left: 0px;
+	position: relative;
+	text-align: center;
+}
+
+div.item {
+	float: left;
+	border: 1px solid black;
+	width: 150px;
+	margin-right: 10px;
+	height: 100px;
+	position: absolute;
+	top: 0;
+	/* unselectable */
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -o-user-select: none;
+   user-select: none;
+}
+
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+</head>
+
+<body>
+
+<div id="wrapper">
+    <div id="containerElement">
+	    <div class="item" unselectable="on">
+        Item 01
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 02
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 03
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 04
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 05
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 06
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 07
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 08
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 09
+	    </div>
+	    <div class="item" unselectable="on">
+        Item 10
+	    </div>
+    </div>
+</div>
+<br />
+    <a href="#" onclick="UISlider.arrowRight()">Right</a>
+    <a href="#" onclick="UISlider.arrowLeft()">Left</a>
+<script type="text/javascript">
+
+    var UISlider;
+
+    $(document).ready(function () {
+
+
+        var Speed = function (distanceInPixels, timeInMilliseconds) {
+
+            this.distance = distanceInPixels || 0; // default to zero
+            this.time = (timeInMilliseconds || 1) === 0 ? 1 : timeInMilliseconds; // default to 1, prevent div by zero
+
+            this.getPixelsPerSecond = function () {
+                return this.distance * 1000 / this.time;
+            };
+
+            this.scaleSpeed = function (scaleFactor) {
+                this.distance *= scaleFactor;
+            };
+
+            this.zero = function () {
+                this.distance = 0;
+                this.time = 1;
+            }
+        };
+
+        window.UISlider = (function () {
+
+            // Initialize a public instance
+            var public = {};
+
+            // intialize private variables
+            var jqContainer = $('div#containerElement');
+            var container = jqContainer[0];
+            var jqWrapperElement = $('div#wrapper');
+            var wrapperElement = jqWrapperElement[0];
+
+            var totalContentWidth, max, min;
+
+            // 50 ms = 20hz, monitors refresh at 60hz
+            // decrease number to no lower than 17 (a little less than 60hz)
+            // decreasing will make animation smoother, but may decrease performance
+            var scrollTimerInterval = 50;
+            var scrollTimer;
+
+            // converting between the left property and offsets causes problems
+            // So I need to subtract out the offset the element has from the body
+            // because it is positioned relatively it takes offset from body
+            //  this doesn't make sense to me, I would think it would take offset from
+            //  its relative parent, but apparently not.
+            var offsetAdjustment = -1 * container.offsetLeft;
+
+            var containerLeft, dragStartX, dragStartTime;
+
+            var slideStartPosition;
+            var slideDistanceTraveled = 0;
+            var speed = new Speed(0, 1);
+
+            // ************************
+            // Private Member Functions
+            // ************************
+
+            // Helper Function: returns the X Coordinate of an event
+            function getEventXCoordinate(event) {
+				var e;
+                var xCoordinate = 0;
+
+                if (event) { // fix for IE where it was ignoring the event args
+					e = event.originalEvent; // fix for jQuery dropping event properties
+                    if (e.changedTouches) { // iPhone
+                        xCoordinate = e.changedTouches[0].clientX;
+                    } else { // all others
+                        xCoordinate = e.clientX;
+                    }
+                }
+                return xCoordinate;
+            }
+
+            // Triggered when dragging starts
+            function startDrag(e) {
+                containerLeft = container.offsetLeft + offsetAdjustment;
+                dragStartX = getEventXCoordinate(e);
+                dragStartTime = new Date().getTime();
+                slideDistanceTraveled = 0;
+                clearInterval(scrollTimer);
+
+                // attach events
+                $(document).bind("mousemove", moveDrag);
+                $(document).bind("touchmove", moveDrag);
+                $(document).bind("mouseup", endDrag);
+                $(document).bind("touchend", endDrag);
+
+                return false; // cancels scrolling
+            }
+
+            // Fired when mousemove, touchmove are called
+            // Moves the containers to the X position of the mouse
+            // If the drag goes outside the bounds then clip it
+            function moveDrag(e) {
+                var currentPos = getEventXCoordinate(e);
+                var newPos = (currentPos - dragStartX) + containerLeft;
+                if (newPos <= max && newPos >= min) {
+                    container.style.left = newPos + 'px';
+                } else if (newPos > max) {
+                    container.style.left = max + 'px';
+                } else if (newPos < min) {
+                    container.style.left = min + 'px';
+                }
+            }
+
+            // Triggered on mouseup/touchend
+            // Sets the speed and triggers the timer
+            function endDrag(e) {
+
+                slideStartPosition = container.offsetLeft + offsetAdjustment;
+                var dragEndX = getEventXCoordinate(e);
+                var dragEndTime = new Date().getTime();
+                var dist = dragEndX - dragStartX;
+                var time = dragEndTime - dragStartTime;
+                speed = new Speed(dist, time);
+                scrollTimer = setInterval(applyScroll, scrollTimerInterval);
+
+                // unset intermediate event handlers
+                $(document).unbind("mousemove");
+                $(document).unbind("mouseup");
+                $(document).unbind("touchmove");
+                $(document).unbind("touchend");
+            }
+
+            function applyScroll() {
+                var newPos;
+
+                slideDistanceTraveled += Math.round(speed.distance * scrollTimerInterval / speed.time);
+                newPos = slideStartPosition + slideDistanceTraveled;
+
+                // If the container is going to travel past the bounds we want to stick it there
+                if (newPos > max) {
+                    container.style.left = max + 'px';
+                    clearInterval(scrollTimer);
+                    return;
+                } else if (newPos < min) {
+                    container.style.left = min + 'px';
+                    clearInterval(scrollTimer);
+                    return;
+                }
+
+                container.style.left = newPos + 'px';
+                speed.scaleSpeed(.85);
+                if (Math.abs(speed.getPixelsPerSecond()) < 10) {
+                    speed.zero();
+                    clearInterval(scrollTimer);
+                }
+            }
+
+            function bump(isLeft) {
+
+                clearInterval(scrollTimer);
+
+                slideDistanceTraveled = 0;
+                slideStartPosition = container.offsetLeft + offsetAdjustment;
+                speed = new Speed(isLeft ? -500 : 500, 1000);
+
+                scrollTimer = setInterval(applyScroll, scrollTimerInterval);
+            }
+
+            // *****************************
+            //  End Private Member Functions
+            // *****************************
+
+            // *****************************
+            //  Public Member Functions
+            // *****************************
+
+            public.arrowLeft = function () {
+                bump(true);
+            };
+
+            public.arrowRight = function () {
+                bump(false);
+            };
+
+            // *****************************
+            //  End Public Member Functions
+            // *****************************
+
+            // *********
+            //  Setup
+            // *********
+
+            // Set positioning of child divs
+            (function () {
+                var position = 0, i = 0;
+                var divs = $('div#containerElement div');
+                var divWidth = divs[0].offsetWidth;
+                for (i = 0; i < divs.length; i++) {
+                    divs[i].style.left = position + 'px';
+                    position += divs[i].offsetWidth + 10;
+                }
+                totalContentWidth = position;
+                min = divWidth - totalContentWidth - offsetAdjustment;
+                max = wrapperElement.offsetWidth - divWidth + offsetAdjustment;
+            } ());
+
+            jqContainer.bind("mousedown", startDrag);
+            jqContainer.bind("touchstart", startDrag);
+
+            // return the public accessible members
+            return public;
+
+        } ());
+    });
+
+</script>
+</body>
+</html>
