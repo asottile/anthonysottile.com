@@ -1,0 +1,15 @@
+language: python
+python: 3.6
+install: pip install virtualenv --upgrade
+script: make
+after_success: make push
+branches:
+    except:
+        - master
+env:
+    global:
+        # GH_TOKEN
+        - secure: "pF2w9SM3TsOwWgSmJ1MZXdbaCdKkincH1LXfVL+tDJmAElEtOpeHaH/uE8UPAOem2r5b+b0rkP4z9z4VIexEnOJheuu1W25iLJP2hxVFSTZUJq4eiQxEs/l3OSC+thnYMrW4FTk1FpxgzOXuqkwfvfe6Qpl+DrhxbASQaARcsNbDk04O4Ksk4a7bfTExxB6+Xi1uRccOhbX2mhIsLuIXqAVVytC8dPuY8BksUMTorFNPNGHHGX8aX6+VFdOGxHHwZQWeiX93i1rnc4OU6Rcgo6WA8lkmN90342xX8U6dGqaRQl338UfPhgBoPexP7eLtmYkvao4cANYYi3RgL5KUrgUNRlHCojBJeJyzwor5zZ6c/2vBm2s9mhGpEHNG4khLcnMgqG/H0ZqVqgYW77+F1TCnQD+JrS3rT3sSUtHYpdIfwDFqya+0HplxTlOyRMH15hnXb7t5jO+OgSs/ZCLyUNKwfwUSIopyXrQFNqeV6IkBwHKiq5J9/G49010wjJ6NKbZbosNn9SleBajPFacCAtzlVxQVmqGjyAf/YNlMIAzqvtCTVh+qgYqmpVpvNajayOV/NlZfCONKxhbDvcCO6i4LWGS+JXr15lE5l6vSOW28lAZKgdWGzY0RnoMBOHtPTYHypd9vNOS+RI3lVrdEyiSUZmy9IHHHWoF6S1h6Ymw="
+cache:
+    directories:
+        - $HOME/.cache/pip

@@ -1,0 +1,33 @@
+#import os.path
+
+#from lib import layout
+
+
+#with layout.html()
+    $layout.head('AnthonySottile.com')
+    #with layout.body(
+        os.path.splitext(os.path.basename(__file__))[0],
+        'Currently showcasing the projects that I am working on.  '
+        'You can browse through them using the links at the top.',
+    ):
+        <h2 class="header">Welcome to my website!</h2>
+        <p>
+            Welcome to my recently (at the time of writing) updated website.
+        </p>
+        <p>
+            My name is Anthony Sottile and I am currently a student at
+            the University of Michigan studying Computer Science
+            and Biochemistry.  For more information about me visit
+            the <a href="/aboutme.html">About Me</a> page.
+        </p>
+        <p>
+            I'm a self taught programmer and I've been writing code
+            for websites, applications, and other things since I was
+            a kid.  You can see some of my projects including
+            <a href="/websites.htm">Websites</a>,
+            <a href="/android.htm">Android Applications</a>,
+            and <a href="/javascript.htm">Javascript</a>
+            by clicking these links or by using the navigation above.
+        </p>
+    #end with
+#end with

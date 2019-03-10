@@ -1,0 +1,20 @@
+#import os.path
+
+#from lib import layout
+
+
+#with layout.html()
+    $layout.head('404 Not Found!')
+    #with layout.body(
+        os.path.splitext(os.path.basename(__file__))[0],
+        "Oops looks like we couldn't find that page!",
+    ):
+        <h2 class="header">
+            404 - Oops we don't have that page!
+        </h2>
+        <p>
+            The Requested Page Was Not Found On This Server!<br /><br />
+            <a href="/">Home</a>
+        </p>
+    #end with
+#end with
