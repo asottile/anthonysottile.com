@@ -148,11 +148,11 @@ div.item {
 
             // Helper Function: returns the X Coordinate of an event
             function getEventXCoordinate(event) {
-				var e;
+                var e;
                 var xCoordinate = 0;
 
                 if (event) { // fix for IE where it was ignoring the event args
-					e = event.originalEvent; // fix for jQuery dropping event properties
+                    e = event.originalEvent; // fix for jQuery dropping event properties
                     if (e.changedTouches) { // iPhone
                         xCoordinate = e.changedTouches[0].clientX;
                     } else { // all others
@@ -231,7 +231,7 @@ div.item {
                 }
 
                 container.style.left = newPos + 'px';
-                speed.scaleSpeed(.85);
+                speed.scaleSpeed(.90);
                 if (Math.abs(speed.getPixelsPerSecond()) < 10) {
                     speed.zero();
                     clearInterval(scrollTimer);
