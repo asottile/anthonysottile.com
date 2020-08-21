@@ -22,8 +22,6 @@ venv: requirements.txt
 .PHONY: push
 push: venv
 	venv/bin/markdown-to-presentation push \
-		--master-branch real_master \
-		--pages-branch master \
 		.nojekyll README.md CNAME \
 		*.htm *.html css images ppm salon winxphtml
 
